@@ -14,7 +14,7 @@ const fetchMyIP = function(callback) {
   request("https://api.ipify.org?format=json", (err, resp, body) => {
     if (err) return callback(err, null);
 
-    if (Response.statusCode !== 200) {
+    if (resp.statusCode !== 200) {
       const msg = `Status Code ${resp.statusCode} when fetching IP. Response: ${body}`;
       callback(Error(msg), null);
       return;
@@ -24,4 +24,26 @@ const fetchMyIP = function(callback) {
   });
 };
 
-module.exports = { fetchMyIP };
+const fetchCoordsByIP = function(ip, callback) {
+  request(`http://ipwho.is/${ip}`, (err, resp, body) => {
+    if (err) return callback(err, null);
+
+    if (resp.statusCode !== 200) {
+      const msg = `Status Code ${resp.statusCode} when fetching coordinates. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+
+    const coordsObj = JSON.parse(body);
+
+    if (!coordsObj.success) {
+      const msg = `Success status was ${coordsObj.success}. Server message says: ${coordsObj.message} when fetching for IP ${coordsObj.ip}`;
+      callback(msg, null);
+      return;
+    }
+    
+    callback(null, coordsObj);
+  });
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIP };
